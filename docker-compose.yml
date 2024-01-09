@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  database:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345qQ_
+    ports:
+      - '33061:3306'
+    volumes:
+      - database_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    environment:
+      PMA_HOST: database
+      PMA_PORT: '3306'
+    ports:
+      - '8084:80'
+
+  php:
+    build: 
+      context: ./docker/php
+    ports:
+      - '84:80'
+    volumes:
+      - ./:/var/www/app
+
+volumes:
+  database_data:
