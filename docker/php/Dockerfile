@@ -1,7 +1,8 @@
 FROM php:7.4-fpm
 
 RUN apt-get update -y \
-    && apt-get install -y nginx
+    && apt-get install -y nginx\
+    && apt-get -y install git
 
 RUN mkdir /usr/local/nvm
 

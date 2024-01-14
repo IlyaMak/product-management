@@ -1,0 +1,9 @@
+{
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.46",
+        "phpstan/phpstan": "^1.10"
+    },
+    "scripts": {
+        "code-analyze": "vendor/bin/phpstan analyze -l 9 src && vendor/bin/php-cs-fixer fix src"
+    }
+}
