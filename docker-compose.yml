@@ -18,8 +18,10 @@ services:
       - '8084:80'
 
   php:
-    build: 
+    build:
       context: ./docker/php
+    env_file:
+      - .env
     ports:
       - '84:80'
     volumes:
