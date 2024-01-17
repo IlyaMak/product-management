@@ -8,6 +8,6 @@ class HomeController
 {
     public function index(): void
     {
-        var_dump(1);
+        require_once(PROJECT_ROOT . '/public/index.html');
     }
 }
