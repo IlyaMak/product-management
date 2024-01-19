@@ -8,11 +8,16 @@ class ProductController
 {
     public function index(): void
     {
-        var_dump('index');
+        header('Content-Type: application/json');
+        echo json_encode([
+            ['name' => 'Tom'],
+            ['name' => 'Rob'],
+            ['name' => 'Sam']
+        ]);
     }
 
     public function add(): void
     {
-        var_dump('add');
+        echo $_POST['name'];
     }
 }
