@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-class Book extends Product
+class Book extends AbstractProduct
 {
     private int $weight;
 
@@ -13,9 +13,10 @@ class Book extends Product
         string $sku,
         string $name,
         float $price,
+        string $type,
         int $weight
     ) {
-        parent::__construct($id, $sku, $name, $price);
+        parent::__construct($id, $sku, $name, $price, $type);
         $this->weight = $weight;
     }
 

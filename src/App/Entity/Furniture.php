@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-class Furniture extends Product
+class Furniture extends AbstractProduct
 {
     private int $height;
     private int $width;
@@ -15,11 +15,12 @@ class Furniture extends Product
         string $sku,
         string $name,
         float $price,
+        string $type,
         int $height,
         int $width,
         int $length
     ) {
-        parent::__construct($id, $sku, $name, $price);
+        parent::__construct($id, $sku, $name, $price, $type);
         $this->height = $height;
         $this->width = $width;
         $this->length = $length;

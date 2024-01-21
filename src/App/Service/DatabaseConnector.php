@@ -17,18 +17,20 @@ class DatabaseConnector
 
     public static function getDatabaseConnection(): PDO
     {
-        if (self::$connection === null) {
-            try {
-                self::$connection = new PDO(
-                    "mysql:host={$_ENV['DATABASE_SERVER_NAME']};dbname={$_ENV['DATABASE_NAME']};charset=utf8mb4",
-                    $_ENV['DATABASE_USER'],
-                    $_ENV['DATABASE_PASSWORD'],
-                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-                );
-            } catch (PDOException $e) {
-                echo "Connection failed: {$e->getMessage()}";
-            }
+        if (self::$connection !== null) {
+            return self::$connection;
         }
-        return self::$connection;
+
+        try {
+            return self::$connection = new PDO(
+                "mysql:host={$_ENV['DATABASE_SERVER_NAME']};dbname={$_ENV['DATABASE_NAME']};charset=utf8mb4",
+                $_ENV['DATABASE_USER'],
+                $_ENV['DATABASE_PASSWORD'],
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+        } catch (PDOException $e) {
+            echo "Connection failed: {$e->getMessage()}";
+            throw $e;
+        }
     }
 }
