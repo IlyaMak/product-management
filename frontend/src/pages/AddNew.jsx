@@ -1,33 +1,80 @@
 import RestApiClient from "../services/RestApiClient";
 import {useState} from "react";
 
-function handleSubmit(e) {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  RestApiClient.create(formData).then(() => window.location.pathname = '/');
+const EMPTY_ERROR_MESSAGE = 'Please, submit required data';
+const TYPE_ERROR_MESSAGE = 'Please, provide the data of indicated type';
+
+const validatorsByEmptyValue = {
+  dvd: (formData) => formData.get('size').length === 0,
+  furniture: (formData) => {
+    return formData.get('height').length === 0
+      || formData.get('width').length === 0
+      || formData.get('length').length === 0;
+  },
+  book: (formData) => formData.get('weight').length === 0
+}
+const validatorsByTypeValue = {
+  dvd: (formData) => isNaN(parseInt(formData.get('size'))),
+  furniture: (formData) => {
+    return isNaN(parseInt(formData.get('height')))
+      || isNaN(parseInt(formData.get('width')))
+      || isNaN(parseInt(formData.get('length')));
+  },
+  book: (formData) => isNaN(parseInt(formData.get('weight')))
 }
 
 const typeContent = {
   'dvd': <div>
-    Size (MB) <input id="size" type="number" name="size"/>
+    Size (MB) <input id="size" type="text" name="size"/>
     <div>Please, provide disk size in MB</div>
   </div>,
   'furniture': <div>
-    Height (CM) <input id="height" type="number" name="height"/>
-    Width (CM) <input id="width" type="number" name="width"/>
-    Length (CM) <input id="length" type="number" name="length"/>
+    Height (CM) <input id="height" type="text" name="height"/>
+    Width (CM) <input id="width" type="text" name="width"/>
+    Length (CM) <input id="length" type="text" name="length"/>
     <div>Please, provide furniture dimensions in CM</div>
   </div>,
   'book': <div>
-    Weight (KG) <input id="weight" type="number" name="weight"/>
+    Weight (KG) <input id="weight" type="text" name="weight"/>
     <div>Please, provide book weight in KG</div>
   </div>
 }
 
 export default function AddNew() {
-  const [productType, setProductType] = useState('');
+  const [type, setType] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleProductType = (e) => setProductType(e.target.value);
+  function handleSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const price = formData.get('price');
+    setErrorMessage('');
+
+    if (
+      formData.get('sku').length === 0
+      || formData.get('name').length === 0
+      || price.length === 0
+      || type.length === 0
+      || validatorsByEmptyValue[type](formData)
+    ) {
+      setErrorMessage(EMPTY_ERROR_MESSAGE);
+      return;
+    }
+    if (isNaN(parseFloat(price.toString())) || validatorsByTypeValue[type](formData)) {
+      setErrorMessage(TYPE_ERROR_MESSAGE);
+      return;
+    }
+
+    RestApiClient.create(formData)
+      .then(async (response) => {
+        const json = await response.json();
+        if (response.ok) {
+          window.location.pathname = '/';
+          return;
+        }
+        setErrorMessage(json.message);
+      })
+  }
 
   return (
     <form id="product_form" onSubmit={handleSubmit} method="post">
@@ -37,14 +84,15 @@ export default function AddNew() {
       <hr/>
       SKU <input id="sku" type="text" name="sku"/>
       Name <input id="name" type="text" name="name"/>
-      Price ($) <input id="price" type="number" name="price"/>
-      <select id="productType" name="productType" value={productType} onChange={handleProductType}>
+      Price ($) <input id="price" type="text" name="price"/>
+      <select id="productType" name="productType" value={type} onChange={(e) => setType(e.target.value)}>
         <option value="">Type Switcher</option>
         <option value="dvd">DVD</option>
         <option value="furniture">Furniture</option>
         <option value="book">Book</option>
       </select>
-      {typeContent[productType]}
+      {typeContent[type]}
+      <span>{errorMessage}</span>
     </form>
   );
 }

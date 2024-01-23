@@ -21,10 +21,21 @@ class ProductRepository extends AbstractProductRepository
         $type = $product->getType();
         $pdoStatement->bindParam('sku', $sku);
         $pdoStatement->bindParam('name', $name);
-        $pdoStatement->bindParam('price', $price, PDO::PARAM_INT);
+        $pdoStatement->bindParam('price', $price);
         $pdoStatement->bindParam('type', $type);
         $pdoStatement->bindParam('childId', $childId, PDO::PARAM_INT);
         $pdoStatement->execute();
         return (int) $this->connection->lastInsertId();
+    }
+
+    public function findBySku(AbstractProduct $product): int
+    {
+        $pdoStatement = $this->connection->prepare(
+            'SELECT COUNT(*) FROM products WHERE sku = :sku'
+        );
+        $sku = $product->getSKU();
+        $pdoStatement->bindParam('sku', $sku);
+        $pdoStatement->execute();
+        return (int) $pdoStatement->fetchColumn();
     }
 }

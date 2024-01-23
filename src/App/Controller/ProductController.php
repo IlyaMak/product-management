@@ -47,14 +47,29 @@ class ProductController
         $product = $productCreator->create($_POST);
         $connection = DatabaseConnector::getDatabaseConnection();
         $concreteProductRepository = new $productRepositories[get_class($product)]($connection);
+        $productRepository = new ProductRepository($connection);
+
+        header('Content-Type: application/json');
+        $httpCode = 200;
+        $response = ['message' => ''];
+
+        if ($productRepository->findBySku($product)) {
+            $httpCode = 400;
+            $response['message'] = 'Product with the same SKU exists. SKU should be unique for each product';
+            http_response_code($httpCode);
+            echo json_encode($response);
+            return;
+        }
+
         try {
             $connection->beginTransaction();
             $concreteProductId = $concreteProductRepository->insert($product);
-            $productRepository = new ProductRepository($connection);
             $productRepository->insert($product, $concreteProductId);
             $connection->commit();
         } catch (Throwable $e) {
             $connection->rollBack();
         }
+        http_response_code($httpCode);
+        echo json_encode($response);
     }
 }
