@@ -20,6 +20,14 @@ class Book extends AbstractProduct
         $this->weight = $weight;
     }
 
+    /** @return array<string, int|float|string> */
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['weight'] = $this->getWeight();
+        return $array;
+    }
+
     public function getWeight(): int
     {
         return $this->weight;

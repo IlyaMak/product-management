@@ -24,4 +24,26 @@ class FurnitureRepository extends AbstractProductRepository
         $pdoStatement->execute();
         return (int) $this->connection->lastInsertId();
     }
+
+    /**
+     * @return array{
+     *    id: int,
+     *    sku: string,
+     *    name: string,
+     *    price: float,
+     *    type: string,
+     *    height: int,
+     *    width: int,
+     *    length: int
+     * }[]
+     */
+    public function findAll(): array
+    {
+        $pdoStatement = $this->connection->query(
+            'SELECT p.id, p.sku, p.name, p.price, p.type, f.height, f.width, f.length FROM furniture f
+                LEFT JOIN products p ON p.child_id = f.id AND p.type = "furniture"'
+        );
+        $result = is_bool($pdoStatement) ? [] : $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
+        return is_array($result) ? $result : [];
+    }
 }

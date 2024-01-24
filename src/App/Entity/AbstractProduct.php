@@ -26,6 +26,18 @@ abstract class AbstractProduct
         $this->type = $type;
     }
 
+    /** @return array<string, int|float|string> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'sku' => $this->getSKU(),
+            'name' => $this->getName(),
+            'price' => $this->getPrice(),
+            'type' => $this->getType(),
+        ];
+    }
+
     public function getId(): int
     {
         return $this->id;

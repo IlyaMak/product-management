@@ -20,6 +20,14 @@ class Dvd extends AbstractProduct
         $this->size = $size;
     }
 
+    /** @return array<string, int|float|string> */
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['size'] = $this->getSize();
+        return $array;
+    }
+
     public function getSize(): int
     {
         return $this->size;

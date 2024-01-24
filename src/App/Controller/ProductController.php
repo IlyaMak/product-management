@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\AbstractProduct;
 use App\Entity\Book;
 use App\Entity\Dvd;
 use App\Entity\Furniture;
+use App\Factory\AbstractProductCreator;
 use App\Factory\BookCreator;
 use App\Factory\DvdCreator;
 use App\Factory\FurnitureCreator;
@@ -14,24 +16,46 @@ use App\Repository\BookRepository;
 use App\Repository\FurnitureRepository;
 use App\Repository\DvdRepository;
 use App\Repository\ProductRepository;
+use App\Service\BookService;
 use App\Service\DatabaseConnector;
+use App\Service\DvdService;
+use App\Service\FurnitureService;
 use Throwable;
 
 class ProductController
 {
     public function index(): void
     {
+        $connection = DatabaseConnector::getDatabaseConnection();
+        $bookService = new BookService($connection);
+        $dvdService = new DvdService($connection);
+        $furnitureService = new FurnitureService($connection);
+        $products = array_merge(
+            $bookService->findAll(),
+            $dvdService->findAll(),
+            $furnitureService->findAll()
+        );
+
+        usort(
+            $products,
+            function (AbstractProduct $a, AbstractProduct $b) {
+                return $a->getId() <=> $b->getId();
+            }
+        );
+        $products = array_map(
+            function (AbstractProduct $element) {
+                return $element->toArray();
+            },
+            $products
+        );
+
         header('Content-Type: application/json');
-        echo json_encode([
-            ['name' => 'Tom'],
-            ['name' => 'Rob'],
-            ['name' => 'Sam']
-        ]);
+        echo json_encode($products);
     }
 
     public function add(): void
     {
-        $productType = $_POST['productType'];
+        $productType = $_POST['type'];
         $productCreators = [
             'dvd' => DvdCreator::class,
             'furniture' => FurnitureCreator::class,
@@ -42,8 +66,13 @@ class ProductController
             Furniture::class => FurnitureRepository::class,
             Book::class => BookRepository::class
         ];
+        /**
+         * @var AbstractProductCreator $productCreator
+         */
         $productCreator = new $productCreators[$productType]();
-        /** @var Book|Dvd|Furniture $product */
+        /**
+         * @var Book|Dvd|Furniture $product
+         */
         $product = $productCreator->create($_POST);
         $connection = DatabaseConnector::getDatabaseConnection();
         $concreteProductRepository = new $productRepositories[get_class($product)]($connection);

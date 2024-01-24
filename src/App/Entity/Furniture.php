@@ -26,6 +26,16 @@ class Furniture extends AbstractProduct
         $this->length = $length;
     }
 
+    /** @return array<string, int|float|string> */
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['height'] = $this->getHeight();
+        $array['width'] = $this->getWidth();
+        $array['length'] = $this->getLength();
+        return $array;
+    }
+
     public function getHeight(): int
     {
         return $this->height;

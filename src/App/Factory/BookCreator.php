@@ -9,16 +9,25 @@ use App\Entity\AbstractProduct;
 
 class BookCreator extends AbstractProductCreator
 {
-    /** @param array<string, string|int|float> $formData */
-    public function create(array $formData): AbstractProduct
+    /**
+     * @param array{
+     *   id: ?int,
+     *   sku: string,
+     *   name: string,
+     *   price: float,
+     *   type: string,
+     *   weight: int
+     * } $data
+     */
+    public function create(array $data): AbstractProduct
     {
         return new Book(
-            0,
-            (string) $formData['sku'],
-            (string) $formData['name'],
-            (float) $formData['price'],
-            (string) $formData['productType'],
-            (int) $formData['weight']
+            (int) ($data['id'] ?? 0),
+            (string) $data['sku'],
+            (string) $data['name'],
+            (float) $data['price'],
+            (string) $data['type'],
+            (int) $data['weight']
         );
     }
 }

@@ -9,18 +9,29 @@ use App\Entity\AbstractProduct;
 
 class FurnitureCreator extends AbstractProductCreator
 {
-    /** @param array<string, string|int|float> $formData */
-    public function create(array $formData): AbstractProduct
+    /**
+     * @param array{
+     *   id: ?int,
+     *   sku: string,
+     *   name: string,
+     *   price: float,
+     *   type: string,
+     *   height: int,
+     *   width: int,
+     *   length: int
+     * } $data
+     */
+    public function create(array $data): AbstractProduct
     {
         return new Furniture(
-            0,
-            (string) $formData['sku'],
-            (string) $formData['name'],
-            (float) $formData['price'],
-            (string) $formData['productType'],
-            (int) $formData['height'],
-            (int) $formData['width'],
-            (int) $formData['length']
+            (int) ($data['id'] ?? 0),
+            (string) $data['sku'],
+            (string) $data['name'],
+            (float) $data['price'],
+            (string) $data['type'],
+            (int) $data['height'],
+            (int) $data['width'],
+            (int) $data['length']
         );
     }
 }

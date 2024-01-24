@@ -85,7 +85,7 @@ export default function AddNew() {
       SKU <input id="sku" type="text" name="sku"/>
       Name <input id="name" type="text" name="name"/>
       Price ($) <input id="price" type="text" name="price"/>
-      <select id="productType" name="productType" value={type} onChange={(e) => setType(e.target.value)}>
+      <select id="productType" name="type" value={type} onChange={(e) => setType(e.target.value)}>
         <option value="">Type Switcher</option>
         <option value="dvd">DVD</option>
         <option value="furniture">Furniture</option>
