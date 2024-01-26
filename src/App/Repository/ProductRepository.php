@@ -38,4 +38,14 @@ class ProductRepository extends AbstractProductRepository
         $pdoStatement->execute();
         return (int) $pdoStatement->fetchColumn();
     }
+
+    /** @param array<int, string> $ids */
+    public function delete(array $ids): void
+    {
+        $in = str_repeat('?,', count($ids) - 1) . '?';
+        $pdoStatement = $this->connection->prepare(
+            "DELETE FROM products WHERE id IN ($in)"
+        );
+        $pdoStatement->execute($ids);
+    }
 }

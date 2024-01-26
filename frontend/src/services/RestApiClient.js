@@ -12,4 +12,11 @@ export default class RestApiClient {
   static create(body) {
     return fetch(`${baseUrl}/api/products`, {method: 'POST', body});
   }
+
+  static delete(body) {
+    return fetch(
+      `${baseUrl}/api/products/delete`,
+      {method: 'POST', body, headers: {"Content-Type": "application/json"}}
+    );
+  }
 }

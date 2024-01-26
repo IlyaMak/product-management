@@ -39,4 +39,15 @@ class DvdRepository extends AbstractProductRepository
         $result = is_bool($pdoStatement) ? [] : $pdoStatement->fetchAll(PDO::FETCH_ASSOC);
         return is_array($result) ? $result : [];
     }
+
+    /** @param array<int, string> $ids */
+    public function delete(array $ids): void
+    {
+        $in = str_repeat('?,', count($ids) - 1) . '?';
+        $pdoStatement = $this->connection->prepare(
+            "DELETE FROM dvds WHERE id IN 
+        (SELECT child_id FROM products WHERE type = 'dvd' AND id IN ($in))"
+        );
+        $pdoStatement->execute($ids);
+    }
 }

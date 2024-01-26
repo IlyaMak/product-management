@@ -101,4 +101,25 @@ class ProductController
         http_response_code($httpCode);
         echo json_encode($response);
     }
+
+    public function delete(): void
+    {
+        /** @var array<int, string> $productIds */
+        $productIds = json_decode((string) file_get_contents('php://input'));
+        $connection = DatabaseConnector::getDatabaseConnection();
+        $bookRepository = new BookRepository($connection);
+        $dvdRepository = new DvdRepository($connection);
+        $furnitureRepository = new FurnitureRepository($connection);
+        $productRepository = new ProductRepository($connection);
+        try {
+            $connection->beginTransaction();
+            $bookRepository->delete($productIds);
+            $dvdRepository->delete($productIds);
+            $furnitureRepository->delete($productIds);
+            $productRepository->delete($productIds);
+            $connection->commit();
+        } catch (Throwable $e) {
+            $connection->rollBack();
+        }
+    }
 }

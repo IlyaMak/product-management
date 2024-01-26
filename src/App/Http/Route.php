@@ -10,6 +10,12 @@ class Route
     private static array $routes = [];
 
     /** @param array<int, string> $controller */
+    public static function get(string $uri, array $controller): Route
+    {
+        return self::add('GET', $uri, $controller);
+    }
+
+    /** @param array<int, string> $controller */
     public static function add(string $method, string $uri, array $controller): Route
     {
         self::$routes[] = [
@@ -22,13 +28,7 @@ class Route
     }
 
     /** @param array<int, string> $controller */
-    public static function get(string $uri, $controller): Route
-    {
-        return self::add('GET', $uri, $controller);
-    }
-
-    /** @param array<int, string> $controller */
-    public static function post(string $uri, $controller): Route
+    public static function post(string $uri, array $controller): Route
     {
         return self::add('POST', $uri, $controller);
     }

@@ -11,6 +11,7 @@ require_once(PROJECT_ROOT . '/config/routes.php');
 
 if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'dev') {
     header('Access-Control-Allow-Origin: *');
+    header("Access-Control-Allow-Headers: *");
 }
 
 (new Router)->run();
