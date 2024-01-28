@@ -48,18 +48,23 @@ RUN chmod +x /etc/entrypoint.sh
 WORKDIR /var/www/app
 
 # prevent the reinstallation of vendors at every changes in the source code
-COPY --link composer.* package-lock.json package.json ./
+COPY --link composer.* ./
+COPY --link frontend/package-lock.json frontend/package.json ./frontend/
 RUN set -eux; \
 	composer install --no-cache --no-dev --no-scripts; \
-    npm i;
+    cd frontend; \
+    npm i; \
+    cd -;
 
 COPY --chown=www-data:www-data . .
 
 RUN set -eux; \
 	mkdir -p var/cache var/log; \
-    touch .env; \
     chown -R www-data:www-data var; \
-    npm run build;
+    cd frontend; \
+    npm run build; \
+    cd -; \
+    cp -r frontend/build/* public/;
 
 EXPOSE 80 443
 
