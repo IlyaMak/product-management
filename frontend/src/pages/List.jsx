@@ -17,14 +17,20 @@ const typeContent = (product) => {
 export default function List() {
   const [products, setProducts] = useState([]);
   const [productIdsForDeletion, setProductIdsForDeletion] = useState([]);
+  const [noProductsMessage, setNoProductsMessage] = useState('');
   useEffect(() => {
     RestApiClient.index()
       .then((response) => response.json())
-      .then((json) => setProducts(json));
+      .then((json) => {
+        if (json.length === 0) {
+          setNoProductsMessage(emptyProductsErrorMessage);
+        }
+        setProducts(json);
+      });
   }, []);
 
   const handleChangeCheckbox = (e) => {
-    const productId = e.target.value;
+    const productId = parseInt(e.target.value);
 
     if (e.target.checked) {
       setProductIdsForDeletion([...productIdsForDeletion, productId]);
@@ -36,8 +42,22 @@ export default function List() {
     );
   };
 
-  const handleDeleteButton = () =>
-    RestApiClient.delete(JSON.stringify(productIdsForDeletion));
+  const handleDeleteButton = () => {
+    if (productIdsForDeletion.length !== 0) {
+      RestApiClient.delete(JSON.stringify(productIdsForDeletion));
+      setProducts(
+        (currentProducts) => {
+          const newProducts =
+            currentProducts.filter((value) => !productIdsForDeletion.includes(value.id));
+          if (newProducts.length === 0) {
+            setNoProductsMessage(emptyProductsErrorMessage);
+          }
+          return newProducts;
+        },
+      );
+      setProductIdsForDeletion([]);
+    }
+  };
 
   return (
     <div className="main-container">
@@ -53,11 +73,11 @@ export default function List() {
         </div>
       </div>
       <hr/>
-      <div className="products-section">
+      <div className={`products-section ${products.length ? "" : "products-section--empty"}`}>
         {
           products.length > 0
-            ? products.map((product, index) => (
-              <div key={index} className="product-card">
+            ? products.map((product) => (
+              <div key={product.id} className="product-card">
                 <input type="checkbox" className="delete-checkbox" name="deleteCheckbox" value={parseInt(product.id)}
                        onChange={handleChangeCheckbox}/>
                 <div className="product-card__content">
@@ -68,7 +88,7 @@ export default function List() {
                 </div>
               </div>
             ))
-            : <h1 className="header-no-products">{emptyProductsErrorMessage}</h1>
+            : <h1 className="header-no-products">{noProductsMessage}</h1>
         }
       </div>
       <Footer/>

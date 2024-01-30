@@ -9,6 +9,7 @@
 
   .header-no-products {
     text-align: center;
+    width: 100%;
   }
 
   .products-section {
@@ -21,6 +22,10 @@
 
     @media screen and (min-width: $md) {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    &--empty {
+      display: block;
     }
   }
 
