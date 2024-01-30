@@ -1,5 +1,9 @@
-import {useEffect, useState} from "react";
-import RestApiClient from "../services/RestApiClient";
+import {useEffect, useState} from 'react';
+import RestApiClient from '../services/RestApiClient';
+import './List.scss';
+import Footer from '../components/Footer/Footer';
+
+const emptyProductsErrorMessage = 'No Products';
 
 const typeContent = (product) => {
   const specificAttributes = {
@@ -8,7 +12,7 @@ const typeContent = (product) => {
     'furniture': <div>Dimension: {product.height}x{product.width}x{product.length}</div>
   };
   return specificAttributes[product.type];
-}
+};
 
 export default function List() {
   const [products, setProducts] = useState([]);
@@ -30,27 +34,44 @@ export default function List() {
     setProductIdsForDeletion(
       productIdsForDeletion.filter((value) => value !== productId)
     );
-  }
+  };
 
   const handleDeleteButton = () =>
     RestApiClient.delete(JSON.stringify(productIdsForDeletion));
 
   return (
-    <>
-      <h1>Product List</h1>
-      <a href="/add-product">ADD</a>
-      <button id="delete-product-btn" onClick={handleDeleteButton}>MASS DELETE</button>
-      <hr/>
-      {products.map((product, index) => (
-        <div key={index}>
-          <input type="checkbox" className="delete-checkbox" name="deleteCheckbox" value={parseInt(product.id)}
-                 onChange={handleChangeCheckbox}/>
-          <div>{product.sku}</div>
-          <div>{product.name}</div>
-          <div>{product.price} $</div>
-          <div>{typeContent(product)}</div>
+    <div className="main-container">
+      <div className="header-container">
+        <h1>Product List</h1>
+        <div className="actions-container actions-container--list">
+          <a className="button button--success" href="/add-product">
+            ADD
+          </a>
+          <button id="delete-product-btn" className="button button--danger" onClick={handleDeleteButton}>
+            MASS DELETE
+          </button>
         </div>
-      ))}
-    </>
+      </div>
+      <hr/>
+      <div className="products-section">
+        {
+          products.length > 0
+            ? products.map((product, index) => (
+              <div key={index} className="product-card">
+                <input type="checkbox" className="delete-checkbox" name="deleteCheckbox" value={parseInt(product.id)}
+                       onChange={handleChangeCheckbox}/>
+                <div className="product-card__content">
+                  <div>{product.sku}</div>
+                  <div>{product.name}</div>
+                  <div>{product.price} $</div>
+                  <div>{typeContent(product)}</div>
+                </div>
+              </div>
+            ))
+            : <h1 className="header-no-products">{emptyProductsErrorMessage}</h1>
+        }
+      </div>
+      <Footer/>
+    </div>
   );
 }

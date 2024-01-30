@@ -3,14 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {routes} from "./routes";
+import {routes} from './routes';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const Page = routes[window.location.pathname] ?? routes['/'];
 root.render(
   <React.StrictMode>
     <App>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div></div>}>
         <Page/>
       </Suspense>
     </App>
