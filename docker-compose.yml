@@ -6,8 +6,10 @@ services:
       MYSQL_ROOT_PASSWORD: 12345qQ_
     ports:
       - '33061:3306'
+    command: --init-file /data/application/init.sql
     volumes:
       - database_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/data/application/init.sql
 
   phpmyadmin:
     image: phpmyadmin
