@@ -14,7 +14,7 @@ Live Demo: https://scandiweb-test-maklore.koyeb.app/
 
 ### Steps:
 
-1. `git clone https://github.com/IlyaMak/scandiweb-test-task`
+1. `git clone`
 2. `cp .env.example .env`
 3. Update database variables in the .env file
 4. `sh build/build.sh`
@@ -30,7 +30,7 @@ Docker Compose v2.21.0
 
 ### Steps:
 
-1. `git clone https://github.com/IlyaMak/scandiweb-test-task`
+1. `git clone`
 2. `cp .env.example .env`
 3. `sh build/build-docker.sh`
 4. `docker compose exec php php migrations/Version20240116135800.php`
