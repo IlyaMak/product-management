@@ -74,8 +74,8 @@ export default function AddNew() {
     setErrorMessage('');
 
     if (
-      formData.get('sku').length === 0
-      || formData.get('name').length === 0
+      formData.get('sku').trim().length === 0
+      || formData.get('name').trim().length === 0
       || price.length === 0
       || type.length === 0
       || validatorsByEmptyValue[type](formData)
@@ -85,7 +85,6 @@ export default function AddNew() {
     }
     if (isNaN(parseFloat(price.toString())) || validatorsByTypeValue[type](formData)) {
       setErrorMessage(typeErrorMessage);
-      return;
     }
 
     RestApiClient.create(formData)

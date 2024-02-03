@@ -24,7 +24,7 @@ class Router
     {
         foreach (Route::all() as $route) {
             if (
-                $_SERVER['REQUEST_METHOD'] === $route->method
+                in_array($_SERVER['REQUEST_METHOD'], [$route->method, 'OPTIONS'], true)
                 && $this->isUriMatched($route->uri)
             ) {
                 return $route;
