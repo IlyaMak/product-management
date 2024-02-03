@@ -11,7 +11,7 @@ class ProductRepository extends AbstractProductRepository
 {
     public function insert(AbstractProduct $product, int $childId): int
     {
-        $pdoStatement = $this->connection->prepare(
+        $pdoStatement = $this->connection->getConnection()->prepare(
             'INSERT INTO products (sku, name, price, type, child_id)
                 VALUES (:sku, :name, :price, :type, :childId)'
         );
@@ -25,12 +25,12 @@ class ProductRepository extends AbstractProductRepository
         $pdoStatement->bindParam('type', $type);
         $pdoStatement->bindParam('childId', $childId, PDO::PARAM_INT);
         $pdoStatement->execute();
-        return (int) $this->connection->lastInsertId();
+        return (int) $this->connection->getConnection()->lastInsertId();
     }
 
     public function findBySku(AbstractProduct $product): int
     {
-        $pdoStatement = $this->connection->prepare(
+        $pdoStatement = $this->connection->getConnection()->prepare(
             'SELECT COUNT(*) FROM products WHERE sku = :sku'
         );
         $sku = $product->getSKU();
@@ -43,7 +43,7 @@ class ProductRepository extends AbstractProductRepository
     public function delete(array $ids): void
     {
         $in = str_repeat('?,', count($ids) - 1) . '?';
-        $pdoStatement = $this->connection->prepare(
+        $pdoStatement = $this->connection->getConnection()->prepare(
             "DELETE FROM products WHERE id IN ($in)"
         );
         $pdoStatement->execute($ids);

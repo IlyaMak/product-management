@@ -5,24 +5,23 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\AbstractProduct;
+use App\Entity\Book;
 use App\Factory\BookCreator;
 use App\Repository\BookRepository;
-use PDO;
 
 class BookService
 {
-    public static PDO $connection;
+    public BookRepository $bookRepository;
 
-    public function __construct(PDO $connection)
+    public function __construct(BookRepository $bookRepository)
     {
-        self::$connection = $connection;
+        $this->bookRepository = $bookRepository;
     }
 
     /** @return AbstractProduct[] */
-    public static function findAll(): array
+    public function findAll(): array
     {
-        $bookRepository = new BookRepository(self::$connection);
-        $books = $bookRepository->findAll();
+        $books = $this->bookRepository->findAll();
         $bookCreator = new BookCreator();
         return array_map(
             function ($element) use ($bookCreator) {
@@ -30,5 +29,16 @@ class BookService
             },
             $books
         );
+    }
+
+    /** @param array<int, string> $productIds */
+    public function delete(array $productIds): void
+    {
+        $this->bookRepository->delete($productIds);
+    }
+
+    public function insert(Book $book): int
+    {
+        return $this->bookRepository->insert($book);
     }
 }

@@ -4,59 +4,66 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use Exception;
+use ReflectionClass;
 
 class Router
 {
     public function run(): void
     {
         $currentRoute = $this->findRoute();
-        $this->dispatch($currentRoute);
+        if ($currentRoute === null) {
+            http_response_code(404);
+            return;
+        }
+        $cache = [];
+        $controller = $this->resolveDependencies($currentRoute->controllerClass, $cache);
+        $controller->{$currentRoute->controllerMethod}();
     }
 
-    /** @return ?array{method: string, uri: string, controller: array<int, string>} */
-    private function findRoute(): ?array
+    private function findRoute(): ?Route
     {
         foreach (Route::all() as $route) {
-            if ($_SERVER['REQUEST_METHOD'] === $route['method'] && $this->isUriMatched($route)) {
+            if (
+                $_SERVER['REQUEST_METHOD'] === $route->method
+                && $this->isUriMatched($route->uri)
+            ) {
                 return $route;
             }
         }
         return null;
     }
 
-    /** @param array{method: string, uri: string, controller: array<int, string>} $route */
-    private function isUriMatched(array $route): bool
+    private function isUriMatched(string $uri): bool
     {
-        $pattern = '/^' . ((string) str_replace('/', '\/', $route['uri'])) . '$/';
+        $pattern = '/^' . ((string) str_replace('/', '\/', $uri)) . '$/';
         $result = preg_match($pattern, $_SERVER['REQUEST_URI']);
         return (bool) $result;
     }
 
-    /** @param array{method: string, uri: string, controller: array<int, string>} $route */
-    private function dispatch(?array $route): void
+    /**
+     * @param class-string $className
+     * @param array<string, object> $cache
+     */
+    private function resolveDependencies(string $className, array $cache): object
     {
-        $action = $route['controller'] ?? null;
+        $reflection = new ReflectionClass($className);
+        $constructor = $reflection->getConstructor();
+        $dependencies = [];
 
-        if (is_null($action)) {
-            return;
-        }
+        if ($constructor) {
+            foreach ($constructor->getParameters() as $parameter) {
+                /**
+                 * @var ReflectionClass $dependency
+                 * @phpstan-ignore-next-line
+                 */
+                $dependency = $parameter->getClass();
 
-        if (is_array($action)) {
-            $class = $action[0];
-
-            if (!class_exists($class)) {
-                throw new Exception("Controller $class not exists");
+                if (!isset($cache[$dependency->getName()])) {
+                    $cache[$dependency->getName()] = $this->resolveDependencies($dependency->getName(), $cache);
+                }
+                $dependencies[] = $cache[$dependency->getName()];
             }
-
-            $method = $action[1];
-
-            if (!method_exists($class, $method)) {
-                throw new Exception("Method $method, in controller $class not found");
-            }
-
-            $controller = new $class();
-            $controller->$method();
         }
+        return $reflection->newInstanceArgs($dependencies);
     }
 }

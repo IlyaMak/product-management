@@ -11,13 +11,13 @@ class DvdRepository extends AbstractProductRepository
 {
     public function insert(Dvd $dvd): int
     {
-        $pdoStatement = $this->connection->prepare(
+        $pdoStatement = $this->connection->getConnection()->prepare(
             'INSERT INTO dvds (size) VALUES (:size)'
         );
         $size = $dvd->getSize();
         $pdoStatement->bindParam('size', $size, PDO::PARAM_INT);
         $pdoStatement->execute();
-        return (int) $this->connection->lastInsertId();
+        return (int) $this->connection->getConnection()->lastInsertId();
     }
 
     /**
@@ -32,7 +32,7 @@ class DvdRepository extends AbstractProductRepository
      */
     public function findAll(): array
     {
-        $pdoStatement = $this->connection->query(
+        $pdoStatement = $this->connection->getConnection()->query(
             'SELECT p.id, p.sku, p.name, p.price, p.type, d.size FROM dvds d
                 LEFT JOIN products p ON p.child_id = d.id AND p.type = "dvd"'
         );
@@ -44,7 +44,7 @@ class DvdRepository extends AbstractProductRepository
     public function delete(array $ids): void
     {
         $in = str_repeat('?,', count($ids) - 1) . '?';
-        $pdoStatement = $this->connection->prepare(
+        $pdoStatement = $this->connection->getConnection()->prepare(
             "DELETE FROM dvds WHERE id IN 
         (SELECT child_id FROM products WHERE type = 'dvd' AND id IN ($in))"
         );

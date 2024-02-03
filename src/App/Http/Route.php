@@ -6,34 +6,64 @@ namespace App\Http;
 
 class Route
 {
-    /** @var array<int, array{method: string, uri: string, controller: array<int, string>}> */
+    /** @var array<int, Route> */
     private static array $routes = [];
+    public string $method;
+    public string $uri;
+    /** @var class-string */
+    public string $controllerClass;
+    public string $controllerMethod;
 
-    /** @param array<int, string> $controller */
-    public static function get(string $uri, array $controller): Route
-    {
-        return self::add('GET', $uri, $controller);
+    /**
+     * @param class-string $controllerClass
+     */
+    public function __construct(
+        string $method,
+        string $uri,
+        string $controllerClass,
+        string $controllerMethod
+    ) {
+        $this->method = $method;
+        $this->uri = $uri;
+        $this->controllerClass = $controllerClass;
+        $this->controllerMethod = $controllerMethod;
     }
 
-    /** @param array<int, string> $controller */
-    public static function add(string $method, string $uri, array $controller): Route
-    {
-        self::$routes[] = [
-            'method' => $method,
-            'uri' => $uri,
-            'controller' => $controller
-        ];
-
-        return new self();
+    /**
+     * @param class-string $controllerClass
+     */
+    public static function get(
+        string $uri,
+        string $controllerClass,
+        string $controllerMethod
+    ): void {
+        self::add('GET', $uri, $controllerClass, $controllerMethod);
     }
 
-    /** @param array<int, string> $controller */
-    public static function post(string $uri, array $controller): Route
-    {
-        return self::add('POST', $uri, $controller);
+    /**
+     * @param class-string $controllerClass
+     */
+    public static function add(
+        string $method,
+        string $uri,
+        string $controllerClass,
+        string $controllerMethod
+    ): void {
+        self::$routes[] = new Route($method, $uri, $controllerClass, $controllerMethod);
     }
 
-    /** @return array<int, array{method: string, uri: string, controller: array<int, string>}> */
+    /**
+     * @param class-string $controllerClass
+     */
+    public static function post(
+        string $uri,
+        string $controllerClass,
+        string $controllerMethod
+    ): void {
+        self::add('POST', $uri, $controllerClass, $controllerMethod);
+    }
+
+    /** @return array<int, Route> */
     public static function all(): array
     {
         return self::$routes;

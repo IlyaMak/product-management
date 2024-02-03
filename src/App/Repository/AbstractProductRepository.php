@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use PDO;
+use App\Service\DatabaseConnector;
 
 abstract class AbstractProductRepository
 {
-    protected PDO $connection;
+    protected DatabaseConnector $connection;
 
-    public function __construct(PDO $connection)
+    public function __construct(DatabaseConnector $connection)
     {
         $this->connection = $connection;
     }

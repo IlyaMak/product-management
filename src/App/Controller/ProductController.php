@@ -12,9 +12,6 @@ use App\Factory\AbstractProductCreator;
 use App\Factory\BookCreator;
 use App\Factory\DvdCreator;
 use App\Factory\FurnitureCreator;
-use App\Repository\BookRepository;
-use App\Repository\FurnitureRepository;
-use App\Repository\DvdRepository;
 use App\Repository\ProductRepository;
 use App\Service\BookService;
 use App\Service\DatabaseConnector;
@@ -24,16 +21,32 @@ use Throwable;
 
 class ProductController
 {
+    private DatabaseConnector $connection;
+    private BookService $bookService;
+    private DvdService $dvdService;
+    private FurnitureService $furnitureService;
+    private ProductRepository $productRepository;
+
+    public function __construct(
+        DatabaseConnector $connection,
+        BookService $bookService,
+        DvdService $dvdService,
+        FurnitureService $furnitureService,
+        ProductRepository $productRepository
+    ) {
+        $this->connection = $connection;
+        $this->bookService = $bookService;
+        $this->dvdService = $dvdService;
+        $this->furnitureService = $furnitureService;
+        $this->productRepository = $productRepository;
+    }
+
     public function index(): void
     {
-        $connection = DatabaseConnector::getDatabaseConnection();
-        $bookService = new BookService($connection);
-        $dvdService = new DvdService($connection);
-        $furnitureService = new FurnitureService($connection);
         $products = array_merge(
-            $bookService->findAll(),
-            $dvdService->findAll(),
-            $furnitureService->findAll()
+            $this->bookService->findAll(),
+            $this->dvdService->findAll(),
+            $this->furnitureService->findAll()
         );
 
         usort(
@@ -61,11 +74,6 @@ class ProductController
             'furniture' => FurnitureCreator::class,
             'book' => BookCreator::class
         ];
-        $productRepositories = [
-            Dvd::class => DvdRepository::class,
-            Furniture::class => FurnitureRepository::class,
-            Book::class => BookRepository::class
-        ];
         /**
          * @var AbstractProductCreator $productCreator
          */
@@ -74,15 +82,12 @@ class ProductController
          * @var Book|Dvd|Furniture $product
          */
         $product = $productCreator->create($_POST);
-        $connection = DatabaseConnector::getDatabaseConnection();
-        $concreteProductRepository = new $productRepositories[get_class($product)]($connection);
-        $productRepository = new ProductRepository($connection);
 
         header('Content-Type: application/json');
         $httpCode = 200;
         $response = ['message' => ''];
 
-        if ($productRepository->findBySku($product)) {
+        if ($this->productRepository->findBySku($product)) {
             $httpCode = 400;
             $response['message'] = 'Product with the same SKU exists. SKU should be unique for each product';
             http_response_code($httpCode);
@@ -90,13 +95,20 @@ class ProductController
             return;
         }
 
+        $productServices = [
+            Dvd::class => $this->dvdService,
+            Furniture::class => $this->furnitureService,
+            Book::class => $this->bookService
+        ];
+        $concreteProductService = $productServices[get_class($product)];
+
         try {
-            $connection->beginTransaction();
-            $concreteProductId = $concreteProductRepository->insert($product);
-            $productRepository->insert($product, $concreteProductId);
-            $connection->commit();
+            $this->connection->getConnection()->beginTransaction();
+            $concreteProductId = $concreteProductService->insert($product);
+            $this->productRepository->insert($product, $concreteProductId);
+            $this->connection->getConnection()->commit();
         } catch (Throwable $e) {
-            $connection->rollBack();
+            $this->connection->getConnection()->rollBack();
         }
         http_response_code($httpCode);
         echo json_encode($response);
@@ -106,20 +118,15 @@ class ProductController
     {
         /** @var array<int, string> $productIds */
         $productIds = json_decode((string) file_get_contents('php://input'));
-        $connection = DatabaseConnector::getDatabaseConnection();
-        $bookRepository = new BookRepository($connection);
-        $dvdRepository = new DvdRepository($connection);
-        $furnitureRepository = new FurnitureRepository($connection);
-        $productRepository = new ProductRepository($connection);
         try {
-            $connection->beginTransaction();
-            $bookRepository->delete($productIds);
-            $dvdRepository->delete($productIds);
-            $furnitureRepository->delete($productIds);
-            $productRepository->delete($productIds);
-            $connection->commit();
+            $this->connection->getConnection()->beginTransaction();
+            $this->bookService->delete($productIds);
+            $this->dvdService->delete($productIds);
+            $this->furnitureService->delete($productIds);
+            $this->productRepository->delete($productIds);
+            $this->connection->getConnection()->commit();
         } catch (Throwable $e) {
-            $connection->rollBack();
+            $this->connection->getConnection()->rollBack();
         }
     }
 }

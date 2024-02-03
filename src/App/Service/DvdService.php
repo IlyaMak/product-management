@@ -5,24 +5,23 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\AbstractProduct;
+use App\Entity\Dvd;
 use App\Factory\DvdCreator;
 use App\Repository\DvdRepository;
-use PDO;
 
 class DvdService
 {
-    public static PDO $connection;
+    public DvdRepository $dvdRepository;
 
-    public function __construct(PDO $connection)
+    public function __construct(DvdRepository $dvdRepository)
     {
-        self::$connection = $connection;
+        $this->dvdRepository = $dvdRepository;
     }
 
     /** @return AbstractProduct[] */
-    public static function findAll(): array
+    public function findAll(): array
     {
-        $dvdRepository = new DvdRepository(self::$connection);
-        $dvds = $dvdRepository->findAll();
+        $dvds = $this->dvdRepository->findAll();
         $dvdCreator = new DvdCreator();
         return array_map(
             function ($element) use ($dvdCreator) {
@@ -30,5 +29,16 @@ class DvdService
             },
             $dvds
         );
+    }
+
+    /** @param array<int, string> $productIds */
+    public function delete(array $productIds): void
+    {
+        $this->dvdRepository->delete($productIds);
+    }
+
+    public function insert(Dvd $dvd): int
+    {
+        return $this->dvdRepository->insert($dvd);
     }
 }

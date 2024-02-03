@@ -9,20 +9,12 @@ use PDOException;
 
 class DatabaseConnector
 {
-    private static ?PDO $connection = null;
+    private PDO $connection;
 
-    private function __construct()
+    public function __construct()
     {
-    }
-
-    public static function getDatabaseConnection(): PDO
-    {
-        if (self::$connection !== null) {
-            return self::$connection;
-        }
-
         try {
-            return self::$connection = new PDO(
+            $this->connection = new PDO(
                 "mysql:host={$_ENV['DATABASE_SERVER_NAME']};dbname={$_ENV['DATABASE_NAME']};charset=utf8mb4",
                 $_ENV['DATABASE_USER'],
                 $_ENV['DATABASE_PASSWORD'],
@@ -32,5 +24,10 @@ class DatabaseConnector
             echo "Connection failed: {$e->getMessage()}";
             throw $e;
         }
+    }
+
+    public function getConnection(): PDO
+    {
+        return $this->connection;
     }
 }
